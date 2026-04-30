@@ -1,0 +1,73 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dutch Auction</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a href="/home" id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Dutch Auction &ndash; <span id="name"></span></h1>
+        <p id="description">Description</p>
+        <p>Current Price: $<span id="price"></span></p>
+        <p id="sold" class="hidden">This item has been sold.</p>
+        <input type="button" value="Buy Now" id="bid-btn" class="mainbutton">
+        <script>
+         var cachedItem;
+
+         $(document).ready(function() {
+           $.ajax({
+             url: "http://localhost:8085/api/items/{{ auctionId }}",
+             type: 'GET',
+             success: function(result) {
+               cachedItem = result;
+               $("#name").text(result.name);
+               $("#description").text(result.description);
+               $("#price").text(result.currentPrice.toFixed(2));
+               if (result.status === "SOLD") {
+                 $("#sold").removeClass("hidden");
+                 $("#bid-btn").attr("disabled", true);
+               }
+             },
+             error: function(error){
+               console.log(error);
+             }
+           });
+         });
+
+         $("#bid-btn").on("click", function(e) {
+           onActiveUser((user) => {
+             e.preventDefault();
+             const bidData = {
+               itemId: cachedItem.id,
+               userId: user.id,
+               bidAmount: cachedItem.currentPrice
+             };
+             console.log(JSON.stringify(bidData));
+             $.ajax({
+               url: "http://localhost:8085/api/main/bid",
+               type: 'POST',
+               contentType: 'application/json',
+               data: JSON.stringify(bidData),
+               success: function(result) { location.href="/auctions/done/{{ auctionId }}"; },
+               error: function(error) { console.log(error); }
+             });
+           });
+         });
+        </script>
+    </body>
+</html>

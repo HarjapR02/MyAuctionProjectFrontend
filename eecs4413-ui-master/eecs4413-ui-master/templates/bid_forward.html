@@ -1,0 +1,109 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Forward Auction</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a href="/home" id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Forward Auction &ndash; <span id="name"></span></h1>
+        <p id="description">Description</p>
+        <form id="bid-form">
+            <table>
+                <tr>
+                    <td>Current Price</td><td class="alignright">$</td><td id="price"></td>
+                </tr>
+                <tr>
+                    <td>Highest Bidder</td><td></td><td id="bidder">No one has bidded on this auction yet.</td>
+                </tr>
+                <tr>
+                    <td>Auction Runs until</td><td></td><td id="end-time"></td>
+                </tr>
+                <tr>
+                    <td><label for="bid-amount">Amount to bid</label></td>
+                    <td class="alignright">$</td>
+                    <td><input type="number" id="bid-amount"></td>
+                </tr>
+            </table>
+            <input type="submit" value="Bid" id="bid" class="mainbutton">
+        </form>
+        <script>
+         var cachedItem;
+
+         $(document).ready(function() {
+           $.ajax({
+             url: "http://localhost:8085/api/items/{{ auctionId }}",
+             type: 'GET',
+             success: function(result) {
+               cachedItem = result;
+               $("#name").text(result.name);
+               $("#description").text(result.description);
+               $("#price").text(result.currentPrice.toFixed(2));
+               $("#end-time").text(result.duration);
+               if (result.highestBidder) {
+                 $("#bidder").text(result.highestBidder.username);
+               }
+             },
+             error: function(error){
+               console.log(error);
+             }
+           });
+         });
+
+         function updateBid(item, amount) {
+           onActiveUser((user) => {
+             const bidData = {
+               itemId: item.id,
+               userId: user.id,
+               bidAmount: amount
+             };
+             console.log(JSON.stringify(bidData));
+             $.ajax({
+               url: "http://localhost:8085/api/main/bid",
+               type: 'POST',
+               contentType: 'application/json',
+               data: JSON.stringify(bidData),
+               success: function(result) { location.reload(); },
+               error: function(error) { console.log(error); }
+             });
+           });
+         }
+
+         $("#bid-form").submit(function(e) {
+	   e.preventDefault();
+
+           const bidAmountStr = $("#bid-amount").val();
+           if (isNaN(bidAmountStr) || isNaN(parseFloat(bidAmountStr))) {
+             alert("Please enter an amount to bid.");
+             return;
+           };
+
+           const bidAmount = parseFloat(bidAmountStr);
+           if (bidAmount <= cachedItem.currentPrice) {
+             alert("Please enter a price higher than the current price.");
+             return;
+           } else if (bidAmount <= cachedItem.startingPrice) {
+             alert("Please enter a price higher than the starting price.");
+             return;
+           }
+
+           updateBid(cachedItem, bidAmount);
+         });
+        </script>
+    </body>
+</html>

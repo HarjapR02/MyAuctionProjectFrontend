@@ -1,0 +1,122 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Auction Ended</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a href="/home" id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Auction Ended &ndash; <span id="name"></span></h1>
+        <p id="description">Description</p>
+        <table>
+            <tr>
+                <td>Price</td>
+                <td class="alignright">$</td>
+                <td id="price"></td>
+            </tr>
+            <tr>
+                <td>Shipping Price</td>
+                <td class="alignright">$</td>
+                <td id="shipping"></td>
+            </tr>
+            <tr>
+                <td>Expedited Shipping Price</td>
+                <td class="alignright">+$</td>
+                <td id="expedited-price"></td>
+            </tr>
+            <tr>
+                <td><label for="expedited-shipping">Enable Expedited Shipping</label></td>
+                <td></td>
+                <td><input type="checkbox" id="expedited-shipping"></td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td class="alignright">$</td>
+                <td id="total"></td>
+            </tr>
+        </table>
+        <p id="notyounotice" class="hidden">Only the user who won an auction can buy the item.</p>
+        <input type="button" value="Pay Now" id="pay" class="mainbutton">
+        <script>
+         var cachedItem;
+
+         function updatePrice() {
+           $.ajax({
+             url: "http://localhost:8085/api/items/{{ auctionId }}",
+             type: 'GET',
+             success: function(result) {
+               cachedItem = result;
+               const currentPrice = result.currentPrice || 0.0;
+               const shippingPrice = result.shippingPrice || 0.0;
+               const expeditedShippingPrice = result.expeditedShippingPrice || 0.0;
+
+               $("#price").text(currentPrice.toFixed(2));
+               $("#shipping").text(shippingPrice.toFixed(2));
+               $("#expedited-price").text(expeditedShippingPrice.toFixed(2));
+               if (document.getElementById("expedited-shipping").checked) {
+                 $("#total").text((currentPrice + shippingPrice + expeditedShippingPrice).toFixed(2));
+               } else {
+                 $("#total").text((currentPrice + shippingPrice).toFixed(2));
+               }
+               if (result.highestBidder) {
+                 $("#bidder").text(result.highestBidder.username);
+               }
+             },
+             error: function(error){
+               console.log(error);
+             }
+           });
+         }
+
+         $(document).ready(function() {
+           $.ajax({
+             url: "http://localhost:8085/api/items/{{ auctionId }}",
+             type: 'GET',
+             success: function(result) {
+               onActiveUser((user) => {
+                 cachedItem = result;
+
+                 $("#name").text(result.name);
+                 $("#description").text(result.description);
+                 if (result.highestBidder) {
+                   $("#bidder").text(result.highestBidder.username);
+                   if (result.highestBidder.id != user.id) {
+                     document.getElementById("pay").disabled = true;
+                     document.getElementById("notyounotice").classList.remove("hidden");
+                   }
+                 }
+
+                 updatePrice();
+               });
+             },
+             error: function(error){
+               console.log(error);
+             }
+           });
+         });
+
+         $("#expedited-shipping").on("change", updatePrice);
+
+         $("#pay").on("click", function() {
+           const expedited = document.getElementById("expedited-shipping").checked;
+           window.location.href = `/auctions/pay/{{ auctionId }}/?expedited=${expedited}`;
+         });
+
+        </script>
+    </body>
+</html>

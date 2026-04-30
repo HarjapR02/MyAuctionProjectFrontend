@@ -1,0 +1,100 @@
+html {
+    font-family: sans-serif;
+}
+
+.fancytable {
+    border-collapse: collapse;
+    border: 2px solid rgb(200,200,200);
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    margin: 10px 0px;
+}
+
+.fancytable td, .fancytable th {
+    border: 1px solid rgb(190,190,190);
+    padding: 10px 20px;
+}
+
+.fancytable th {
+    background-color: rgb(235,235,235);
+}
+
+.fancytable td {
+    text-align: center;
+}
+
+.fancytable tr:nth-child(even) td {
+    background-color: rgb(250,250,250);
+}
+
+.fancytable tr:nth-child(odd) td {
+    background-color: rgb(245,245,245);
+}
+
+caption {
+    padding: 10px;
+}
+
+nav {
+    display: block;
+    background-color: rgb(60, 60, 60);
+    padding: 15px;
+    color: white;
+    margin: auto;
+    font-size: 20px;
+    border-radius: 10px;
+}
+
+.navbuttons {
+    float: right;
+}
+
+.navitem {
+    background-color: rgb(60, 60, 60);
+    color: white;
+    text-decoration: none;
+    padding: 6px 8px;
+    margin: auto;
+}
+
+.navbutton {
+    display: inline;
+    background-color: rgb(240, 240, 240);
+    color: black;
+    border: none;
+    font-size: 20px;
+    text-decoration: none;
+    margin: auto;
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+.navbutton:hover {
+    background-color: #ddd;
+}
+
+.mainbutton {
+    display: inline;
+    background-color: rgb(60, 60, 60);
+    color: white;
+    border: none;
+    font-size: 16px;
+    text-decoration: none;
+    margin: 5px 0px;
+    text-align: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+.mainbutton:hover {
+    background-color: rgb(85, 85, 85);
+}
+
+.hidden {
+    display: none;
+}
+
+.alignright {
+    float: right;
+}

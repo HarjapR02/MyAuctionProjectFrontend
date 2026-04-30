@@ -1,0 +1,120 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sell Item</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a href="/home" id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Sell Item</h1>
+        <form id="sellForm">
+            <table>
+                <tr>
+                    <td><label for="item-name">Item Name</label></td>
+                    <td></td>
+                    <td><input type="text" id="item-name" required></td>
+                </tr>
+                <tr>
+                    <td><label for="item-description">Item Description</label></td>
+                    <td></td>
+                    <td><textarea id="item-description" required></textarea></td>
+                </tr>
+                <tr>
+                    <td><label for="initial-price">Initial Price</label></td>
+                    <td class="alignright">$</td>
+                    <td><input type="number" id="initial-price" required></td>
+                </tr>
+                <tr>
+                    <td><label for="shipping-price">Shipping Price</label></td>
+                    <td class="alignright">$</td>
+                    <td><input type="number" id="shipping-price" required></td>
+                </tr>
+                <tr>
+                    <td><label for="expedited-price">Expedited Shipping Price</label></td>
+                    <td class="alignright">+$</td>
+                    <td><input type="number" id="expedited-price" required></td>
+                </tr>
+                <tr>
+                    <td>Auction Type</td>
+                    <td></td>
+                    <td>
+                        <input type="radio" id="forward" name="auction-type" value="FORWARD">
+                        <label for="forward"><abbr title="Everyone has a certain time to bid for the item.  Whoever offers the highest price buys the item for that price.">Forward</abbr></label><br>
+                        <input type="radio" id="dutch" name="auction-type" value="DUTCH">
+                        <label for="dutch"><abbr title="The item is offered at a certain price, which decreases over time.  Whoever makes an offer first buys the item for that price.">Dutch</abbr></label><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="until">Run auction until</label></td>
+                    <td></td>
+                    <td><input id="until" type="date"><br></td>
+                </tr>
+            </table>
+            <input type="submit" value="Create Auction" class="mainbutton">
+        </form>
+        <script>
+         function create(user) {
+           var date = new Date($("#until").val());
+           date = new Date(date.getTime() + 86400000 * 5 + 86400000 * 10 * Math.random());
+
+           var itemData = {
+             name: $("#item-name").val(),
+             description: $("#item-description").val(),
+             startingPrice: $("#initial-price").val(),
+             currentPrice: $("#initial-price").val(),
+             shippingPrice: $("#shipping-price").val(),
+             expeditedShippingPrice: $("#expedited-price").val(),
+             status: "AVAILABLE",
+             auctionType: $('input[name="auction-type"]:checked').val(),
+             arrival: date.toISOString(),
+             duration: new Date($("#until").val()).toISOString(),
+             owner: user
+           };
+
+           $.ajax({
+             url: "http://localhost:8085/api/items",
+             type: 'POST',
+             contentType: 'application/json',
+             data: JSON.stringify(itemData),
+             success: function(result) {
+               window.location.href = "/auctions";
+             },
+	     error: function(error) {
+               console.log(error);
+             }
+           });
+         }
+
+         $("#sellForm").submit(function(e) {
+           e.preventDefault();
+           $.ajax({
+             url: `http://localhost:8085/api/users/userfromtoken`,
+             type: 'POST',
+             contentType: 'application/json',
+             data: localStorage.getItem("activeUserToken"),
+             success: function(result) {
+               create(result);
+             },
+             error: function(error) {
+               console.log(error);
+             }
+           });
+         });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,119 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sign Up</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Sign Up</h1>
+        <form id="registerForm">
+            <table>
+                <tr>
+                    <td><label for="username-input">Username</label></td>
+                    <td><input type="text" id="username-input"><br></td>
+                </tr>
+                <tr>
+                    <td><label for="password-input">Password</label></td>
+                    <td><input type="password" id="password-input"></td>
+                </tr>
+                <tr></tr>
+                <tr>
+                    <td><label for="first-name-input">First Name</label></td>
+                    <td><input type="text" id="first-name-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="last-name-input">Last Name</label></td>
+                    <td><input type="text" id="last-name-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="address-input">Address</label></td>
+                    <td><input type="text" id="address-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="street-number-input">Street Number</label></td>
+                    <td><input type="text" id="street-number-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="postal-code-input">Postal Code</label></td>
+                    <td><input type="text" id="postal-code-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="city-input">City</label></td>
+                    <td><input type="text" id="city-input"></td>
+                </tr>
+                <tr>
+                    <td><label for="country-input">Country</label></td>
+                    <td><input type="text" id="country-input"></td>
+                </tr>
+            </table>
+            <input type="submit" value="Register" class="mainbutton">
+        </form>
+        <script>
+         function login(username, password) {
+           var accountData = { username: username, password: password };
+           console.log(JSON.stringify(accountData));
+           $.ajax({
+             url: "http://localhost:8085/api/users/login",
+             type: 'POST',
+             contentType: 'application/json',
+             data: JSON.stringify(accountData),
+             success: function(result) {
+               localStorage.setItem("activeUserToken", result);
+               window.location.href = "/home";
+             },
+             error: function(error) {
+               if (error.status === 401) {
+                 alert("Login failed.");
+               } else {
+                 console.log("An error occurred.");
+                 console.log(error);
+               }
+             }
+           });
+         }
+
+         $("#registerForm").submit(function(e) {
+           e.preventDefault();
+           var accountData = {
+             username: $("#username-input").val(),
+             password: $("#password-input").val(),
+             firstName: $("#first-name-input").val(),
+             lastName: $("#last-name-input").val(),
+             streetName: $("#address-input").val(),
+             streetNumber: $("#street-number-input").val(),
+             postalCode: $("#postal-code-input").val(),
+             city: $("#city-input").val(),
+             country: $("#country-input").val(),
+           };
+           $.ajax({
+             url: "http://localhost:8085/api/users/register",
+             type: 'POST',
+             contentType: 'application/json',
+             data: JSON.stringify(accountData),
+             success: function(result) {
+               login($("#username-input").val(), $("#password-input").val());
+             },
+	     error: function(error){
+               console.log(error);
+             }
+           });
+         });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,81 @@
+<html>
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Receiving Item</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <nav>
+            <a href="/home" class="navitem">Silicon Auctions</a>
+
+            <div class="alignright">
+                <span id="username" class="navitem">Not logged in</span>
+                <a href="/home" id="logout" class="navbutton">Logout</a>
+                <a href="/login" id="login" class="navbutton">Login</a>
+                <a href="/register" id="sign-up" class="navbutton">Sign Up</a>
+
+                <a href="/auctions" class="navitem">Auctions</a>
+                <a href="/auctions/sell" id="new-auction" class="navitem">New Auction</a>
+            </div>
+        </nav>
+        <script src="/navcode.js"></script>
+        <h1>Receiving Item</h1>
+        <h2>Winning Bidder</h2>
+        <table class="fancytable">
+            <tr><td>First Name</td><td id="first-name"></td></tr>
+            <tr><td>Last Name</td><td id="last-name"></td></tr>
+            <tr><td>Street</td><td id="street"></td></tr>
+            <tr><td>Street Number</td><td id="street-number"></td></tr>
+            <tr><td>City</td><td id="city"></td></tr>
+            <tr><td>Country</td><td id="country"></td></tr>
+            <tr><td>Postal Code</td><td id="postal-code"></td></tr>
+        </table>
+
+        <h2>Auctioned Item &ndash; <span id="name">Item</span></h2>
+        <p id="description">Description</p>
+
+        <h2>Shipping Information</h2>
+        <p>The item will arrive in <span id="days">?</span> days.</p>
+        <script>
+         function updateBidderData(bidder) {
+           $("#first-name").text(bidder.firstName);
+           $("#last-name").text(bidder.lastName);
+           $("#street").text(bidder.streetName);
+           $("#street-number").text(bidder.streetNumber);
+           $("#city").text(bidder.city);
+           $("#country").text(bidder.country);
+           $("#postal-code").text(bidder.postalCode);
+         }
+
+         $(document).ready(function() {
+           $.ajax({
+             url: "http://localhost:8085/api/items/{{ auctionId }}",
+             type: 'GET',
+             success: function(result) {
+               $("#name").text(result.name);
+               $("#description").text(result.description);
+               if (result.highestBidder) {
+                 $("#bidder").text(result.highestBidder.username);
+               }
+
+               if (result.arrival) {
+                 const arrival = new Date(result.arrival);
+                 const now = new Date();
+                 const differenceMillis = arrival.getTime() - now.getTime();
+                 const differenceDays = Math.round(differenceMillis / 86400000);
+
+                 $("#days").text(differenceDays);
+               }
+
+               updateBidderData(result.highestBidder);
+             },
+             error: function(error){
+               console.log(error);
+             }
+           });
+         });
+        </script>
+    </body>
+</html>
